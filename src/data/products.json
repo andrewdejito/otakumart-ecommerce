@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "name": "Naruto Action Figure",
+    "price": 899.00,
+    "image": "/images/naruto-figure.jpg",
+    "description": "Highly detailed Naruto Uzumaki collectible action figure."
+  },
+  {
+    "id": 2,
+    "name": "Attack on Titan Hoodie",
+    "price": 1299.00,
+    "image": "/images/aot-hoodie.jpg",
+    "description": "Comfortable Survey Corps hoodie for anime fans."
+  }
+]
