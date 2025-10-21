@@ -6,7 +6,7 @@ import ProductList from './components/ProductList';
 import ProductDetails from './components/ProductDetails';
 import Cart from './components/Cart';
 import Checkout from './components/Checkout';
-import OrderList from './components/orders/OrderList';
+import OrderList from './components/Orders/OrderList';
 import OrderDetails from './components/Orders/OrderDetails';
 import AdminLogin from './components/Admin/AdminLogin';
 import AdminProductForm from './components/Admin/AdminProductForm';
