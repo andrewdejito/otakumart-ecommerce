@@ -1,233 +1,120 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useCart } from "../context/CartContext";
+// src/components/Checkout.jsx
+import React, { useState } from 'react';
+import { Container, Row, Col, Button, Form, Image } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
 
 function Checkout() {
   const { cartItems, clearCart } = useCart();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    address: "",
-    apartment: "",
-    city: "",
-    country: "",
-    zipcode: "",
-    email: "",
-    cardNumber: "",
-    payment: "",
+    firstName: '',
+    lastName: '',
+    address: '',
+    apartment: '',
+    city: '',
+    country: '',
+    zipcode: '',
+    email: '',
+    cardNumber: '',
+    payment: ''
   });
 
-  const total = cartItems.reduce(
-    (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
-    0
-  );
+  const total = cartItems.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
 
-  const handleInput = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleInput = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     if (!form.firstName || !form.lastName || !form.address || !form.payment) {
-      alert("⚠️ Please fill all required fields.");
+      alert('⚠️ Please fill all required fields.');
       return;
     }
 
-    alert(
-      `✅ Order placed successfully!\nThank you, ${form.firstName}!\nTotal: ₱${total.toLocaleString()}`
-    );
+    alert(`✅ Order placed successfully!\nThank you, ${form.firstName}!\nTotal: ₱${total.toLocaleString()}`);
 
     clearCart();
-    navigate("/");
+    navigate('/');
   };
 
   return (
-    <main className="container py-5">
+    <Container className="app-container">
       <h2 className="fw-bold mb-4">Checkout</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="row g-4">
-          {/* Shipping Info */}
-          <div className="col-md-5">
+      <Form onSubmit={handleSubmit}>
+        <Row className="g-4">
+          <Col md={5}>
             <h5>Delivery Address</h5>
             <p className="text-muted small">Shipping Information</p>
 
-            <div className="row">
-              <div className="col">
-                <input
-                  type="text"
-                  name="firstName"
-                  placeholder="First Name"
-                  className="form-control mb-2"
-                  value={form.firstName}
-                  onChange={handleInput}
-                />
-              </div>
-              <div className="col">
-                <input
-                  type="text"
-                  name="lastName"
-                  placeholder="Last Name"
-                  className="form-control mb-2"
-                  value={form.lastName}
-                  onChange={handleInput}
-                />
-              </div>
-            </div>
+            <Row>
+              <Col>
+                <Form.Control type="text" name="firstName" placeholder="First Name" className="mb-2" value={form.firstName} onChange={handleInput} />
+              </Col>
+              <Col>
+                <Form.Control type="text" name="lastName" placeholder="Last Name" className="mb-2" value={form.lastName} onChange={handleInput} />
+              </Col>
+            </Row>
 
-            <input
-              type="text"
-              name="address"
-              placeholder="Address"
-              className="form-control mb-2"
-              value={form.address}
-              onChange={handleInput}
-            />
-            <input
-              type="text"
-              name="apartment"
-              placeholder="Apartment, suite, etc. (optional)"
-              className="form-control mb-2"
-              value={form.apartment}
-              onChange={handleInput}
-            />
-            <input
-              type="text"
-              name="city"
-              placeholder="City"
-              className="form-control mb-2"
-              value={form.city}
-              onChange={handleInput}
-            />
-            <div className="row">
-              <div className="col">
-                <input
-                  type="text"
-                  name="country"
-                  placeholder="Country"
-                  className="form-control mb-2"
-                  value={form.country}
-                  onChange={handleInput}
-                />
-              </div>
-              <div className="col">
-                <input
-                  type="text"
-                  name="zipcode"
-                  placeholder="Zipcode"
-                  className="form-control mb-2"
-                  value={form.zipcode}
-                  onChange={handleInput}
-                />
-              </div>
-            </div>
-            <div className="form-check mt-2">
-              <input type="checkbox" className="form-check-input" />
-              <label className="form-check-label small">Save information</label>
-            </div>
-          </div>
+            <Form.Control type="text" name="address" placeholder="Address" className="mb-2" value={form.address} onChange={handleInput} />
+            <Form.Control type="text" name="apartment" placeholder="Apartment, suite, etc. (optional)" className="mb-2" value={form.apartment} onChange={handleInput} />
+            <Form.Control type="text" name="city" placeholder="City" className="mb-2" value={form.city} onChange={handleInput} />
 
-          {/* Payment Info */}
-          <div className="col-md-4">
+            <Row>
+              <Col>
+                <Form.Control type="text" name="country" placeholder="Country" className="mb-2" value={form.country} onChange={handleInput} />
+              </Col>
+              <Col>
+                <Form.Control type="text" name="zipcode" placeholder="Zipcode" className="mb-2" value={form.zipcode} onChange={handleInput} />
+              </Col>
+            </Row>
+
+            <Form.Check type="checkbox" label="Save information" className="mt-2" />
+          </Col>
+
+          <Col md={4}>
             <h5>Payment Method</h5>
-            <div className="form-check">
-              <input
-                type="radio"
-                name="payment"
-                value="COD"
-                className="form-check-input"
-                onChange={handleInput}
-              />
-              <label className="form-check-label">Cash on Delivery</label>
-            </div>
-            <div className="form-check mb-3">
-              <input
-                type="radio"
-                name="payment"
-                value="Credit Card"
-                className="form-check-input"
-                onChange={handleInput}
-              />
-              <label className="form-check-label">Credit Card</label>
-            </div>
+            <Form.Check type="radio" name="payment" label="Cash on Delivery" value="COD" onChange={handleInput} />
+            <Form.Check type="radio" name="payment" label="Credit Card" value="Credit Card" onChange={handleInput} className="mb-3" />
 
             <h6>Payment Details</h6>
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              className="form-control mb-2"
-              value={form.email}
-              onChange={handleInput}
-            />
-            <input
-              type="text"
-              name="cardNumber"
-              placeholder="Card Number"
-              className="form-control"
-              value={form.cardNumber}
-              onChange={handleInput}
-            />
-          </div>
+            <Form.Control type="email" name="email" placeholder="Email" className="mb-2" value={form.email} onChange={handleInput} />
+            <Form.Control type="text" name="cardNumber" placeholder="Card Number" value={form.cardNumber} onChange={handleInput} />
+          </Col>
 
-          {/* Order Summary */}
-          <div className="col-md-3">
+          <Col md={3}>
             <h5>Products Ordered</h5>
             <div className="border rounded p-2 mb-2">
-              {cartItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="d-flex justify-content-between align-items-center mb-2"
-                >
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    width="60"
-                    height="60"
-                    style={{ objectFit: "cover", borderRadius: "6px" }}
-                  />
-                  <div className="ms-2 flex-grow-1">
-                    <p className="mb-0 fw-semibold small">{item.name}</p>
-                    <p className="text-muted small mb-0">
-                      ₱{item.price.toLocaleString()}
-                    </p>
-                    <p className="small mb-0">
-                      Quantity: {item.quantity || 1}
-                    </p>
+              {cartItems.length === 0 ? (
+                <div className="small text-muted">No items in cart</div>
+              ) : (
+                cartItems.map((item) => (
+                  <div key={item.id} className="d-flex align-items-center mb-2">
+                    <Image src={item.image} alt={item.name} width={60} height={60} rounded style={{ objectFit: 'cover' }} />
+                    <div className="ms-2 flex-grow-1">
+                      <div className="mb-0 fw-semibold small">{item.name}</div>
+                      <div className="text-muted small">₱{item.price.toLocaleString()}</div>
+                      <div className="small">Quantity: {item.quantity || 1}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
-              <input
-                type="text"
-                placeholder="Enter discount code"
-                className="form-control form-control-sm"
-              />
+                ))
+              )}
+
+              <Form.Control type="text" placeholder="Enter discount code" className="form-control-sm mt-2" />
             </div>
 
             <h6 className="text-end">
-              Total Payment:{" "}
-              <span className="text-danger fw-bold">
-                ₱{total.toLocaleString()}
-              </span>
+              Total Payment: <span className="text-danger fw-bold">₱{total.toLocaleString()}</span>
             </h6>
 
             <div className="d-flex flex-column mt-3">
-              <button
-                type="button"
-                className="btn btn-outline-secondary mb-2"
-                onClick={() => navigate("/cart")}
-              >
-                Cancel
-              </button>
-              <button type="submit" className="btn btn-primary">
-                Place Order
-              </button>
+              <Button variant="outline-secondary" className="mb-2" onClick={() => navigate('/cart')}>Cancel</Button>
+              <Button type="submit" variant="primary">Place Order</Button>
             </div>
-          </div>
-        </div>
-      </form>
-    </main>
+          </Col>
+        </Row>
+      </Form>
+    </Container>
   );
 }
 

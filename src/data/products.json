@@ -2,15 +2,193 @@
   {
     "id": 1,
     "name": "Naruto Action Figure",
-    "price": 899.00,
+    "price": 899,
     "image": "/images/naruto-figure.jpg",
+    "category": "Figures",
     "description": "Highly detailed Naruto Uzumaki collectible action figure."
   },
   {
     "id": 2,
     "name": "Attack on Titan Hoodie",
-    "price": 1299.00,
+    "price": 1299,
     "image": "/images/aot-hoodie.jpg",
+    "category": "Apparels",
     "description": "Comfortable Survey Corps hoodie for anime fans."
+  },
+  {
+    "id": 3,
+    "name": "Sailor Moon Manga Vol.1",
+    "price": 450,
+    "image": "/images/sailor-moon-manga.jpg",
+    "category": "Manga & Books",
+    "description": "Classic shojo manga — first volume."
+  },
+  {
+    "id": 4,
+    "name": "Pikachu Plushie (Medium)",
+    "price": 650,
+    "image": "/images/pikachu-plush.jpg",
+    "category": "Plushies",
+    "description": "Super soft Pikachu plushie, great as gift."
+  },
+  {
+    "id": 5,
+    "name": "Limited Edition Goku Figure",
+    "price": 2599,
+    "image": "/images/goku-figure.jpg",
+    "category": "New Arrivals",
+    "description": "Premium Goku figure with base and interchangeable hands."
+  },
+  {
+    "id": 6,
+    "name": "Cosplay Wig - Black Short",
+    "price": 799,
+    "image": "/images/cosplay-wig.jpg",
+    "category": "Cosplays",
+    "description": "Heat-resistant short black wig for cosplay."
+  },
+  {
+    "id": 7,
+    "name": "Chibi Keychain Set (3pcs)",
+    "price": 299,
+    "image": "/images/keychain-set.jpg",
+    "category": "Accessories",
+    "description": "Cute chibi keychains set — perfect for backpacks."
+  },
+  {
+    "id": 8,
+    "name": "One Piece Manga Boxset Vol.1-3",
+    "price": 1299,
+    "image": "/images/onepiece-box.jpg",
+    "category": "Manga & Books",
+    "description": "Starter boxset of One Piece volumes 1 to 3."
+  },
+  {
+    "id": 9,
+    "name": "Deku Figure (Sale)",
+    "price": 1199,
+    "image": "/images/deku-figure.jpg",
+    "category": "Sales",
+    "description": "Dekus figure on special sale — limited stock."
+  },
+  {
+    "id": 10,
+    "name": "Studio Ghibli Tote Bag",
+    "price": 349,
+    "image": "/images/ghibli-tote.jpg",
+    "category": "Accessories",
+    "description": "Canvas tote bag inspired by Ghibli films."
+  },
+  {
+    "id": 11,
+    "name": "Re:Zero Rem Plush (Small)",
+    "price": 599,
+    "image": "/images/rem-plush.jpg",
+    "category": "Plushies",
+    "description": "Adorable Rem plush for collectors."
+  },
+  {
+    "id": 12,
+    "name": "Saber Nendoroid Figure",
+    "price": 1899,
+    "image": "/images/saber-nendoroid.jpg",
+    "category": "Figures",
+    "description": "Nendoroid figure with multiple faceplates and accessories."
+  },
+  {
+    "id": 13,
+    "name": "Kawaii Socks Pack",
+    "price": 199,
+    "image": "/images/kawaii-socks.jpg",
+    "category": "Apparels",
+    "description": "3-pack of cute anime socks."
+  },
+  {
+    "id": 14,
+    "name": "Mikasa Scarf Replica",
+    "price": 399,
+    "image": "/images/mikasa-scarf.jpg",
+    "category": "Cosplays",
+    "description": "Replica scarf inspired by Attack on Titan."
+  },
+  {
+    "id": 15,
+    "name": "Limited Manga Preorder — Spy x Family Vol.10",
+    "price": 599,
+    "image": "/images/spyxfamily-vol10.jpg",
+    "category": "New Arrivals",
+    "description": "Preorder for the newest Spy x Family volume."
+  },
+  {
+    "id": 16,
+    "name": "Phone Grip - Anime Eyes",
+    "price": 149,
+    "image": "/images/phone-grip.jpg",
+    "category": "Accessories",
+    "description": "Trendy phone grip with anime-eye design."
+  },
+  {
+    "id": 17,
+    "name": "Attack on Titan Figure (Collector)",
+    "price": 3299,
+    "image": "/images/aot-figure.jpg",
+    "category": "Figures",
+    "description": "Collector-grade figure with articulated parts."
+  },
+  {
+    "id": 18,
+    "name": "Sakura Cosplay Dress",
+    "price": 2499,
+    "image": "/images/sakura-dress.jpg",
+    "category": "Cosplays",
+    "description": "Full cosplay dress set for Sakura-inspired characters."
+  },
+  {
+    "id": 19,
+    "name": "Sale — Anime Poster Pack",
+    "price": 249,
+    "image": "/images/poster-pack.jpg",
+    "category": "Sales",
+    "description": "Set of 5 anime posters on sale now."
+  },
+  {
+    "id": 20,
+    "name": "Totoro Mug",
+    "price": 299,
+    "image": "/images/totoro-mug.jpg",
+    "category": "Accessories",
+    "description": "Ceramic mug featuring Totoro."
+  },
+  {
+    "id": 21,
+    "name": "Black Butler Graphic Tee",
+    "price": 499,
+    "image": "/images/blackbutler-tee.jpg",
+    "category": "Apparels",
+    "description": "Comfy unisex graphic tee."
+  },
+  {
+    "id": 22,
+    "name": "Berserk Deluxe Edition (Manga)",
+    "price": 999,
+    "image": "/images/berserk-deluxe.jpg",
+    "category": "Manga & Books",
+    "description": "Collector's deluxe volume for Berserk fans."
+  },
+  {
+    "id": 23,
+    "name": "Cheshire Cat Plushie",
+    "price": 749,
+    "image": "/images/cheshire-plush.jpg",
+    "category": "Plushies",
+    "description": "Whimsical Cheshire Cat plush."
+  },
+  {
+    "id": 24,
+    "name": "Cosplay Boots (Unisex)",
+    "price": 1399,
+    "image": "/images/cosplay-boots.jpg",
+    "category": "Cosplays",
+    "description": "Durable boots perfect for cosplay builds."
   }
 ]
