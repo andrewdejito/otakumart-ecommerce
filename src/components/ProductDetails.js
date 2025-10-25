@@ -1,68 +1,55 @@
-// src/components/ProductDetails.js
-import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import products from "../data/products.json";
-import { useCart } from "../context/CartContext";
+// src/components/ProductDetails.jsx
+import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Container, Row, Col, Button } from 'react-bootstrap';
+import products from '../data/products.json';
+import { useCart } from '../context/CartContext';
 
 function ProductDetails() {
   const { id } = useParams();
-  const navigate = useNavigate();
-  const { addToCart } = useCart();
   const product = products.find((p) => p.id === Number(id));
+  const { addToCart } = useCart();
+  const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
 
-  const handleAddToCart = () => {
+  if (!product) return <Container className="app-container"><p>Product not found.</p></Container>;
+
+  const handleAdd = () => {
     addToCart({ ...product, quantity });
     alert(`${quantity} × ${product.name} added to cart`);
   };
 
   const handleBuyNow = () => {
     addToCart({ ...product, quantity });
-    navigate("/checkout");
+    navigate('/checkout');
   };
 
-  if (!product) return <p>Product not found.</p>;
-
   return (
-    <main className="container py-5">
-      <h2 className="fw-bold mb-4">Product Details</h2>
-      <div className="row g-4">
-        <div className="col-md-5 text-center">
-          <img
-            src={product.image}
-            alt={product.name}
-            className="img-fluid rounded"
-            style={{ maxHeight: "350px", objectFit: "cover" }}
-          />
-        </div>
+    <main className="app-container">
+      <Container>
+        <h2 className="fw-bold mb-4">Product Details</h2>
+        <Row className="g-4">
+          <Col md={5} className="text-center">
+            <img src={product.image} alt={product.name} className="img-fluid rounded" style={{ maxHeight: 400, objectFit: 'contain' }} />
+          </Col>
 
-        <div className="col-md-7">
-          <h3 className="fw-bold">{product.name}</h3>
-          <p className="fs-5 text-danger">
-            ₱{product.price.toLocaleString()}
-          </p>
-          <p>{product.description}</p>
+          <Col md={7}>
+            <h3 className="fw-bold">{product.name}</h3>
+            <p className="fs-4 text-danger">₱{product.price.toLocaleString()}</p>
+            <p className="text-muted">{product.description}</p>
 
-          <div className="d-flex align-items-center gap-3 mb-3">
-            <label className="fw-semibold">Quantity:</label>
-            <input
-              type="number"
-              min="1"
-              value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-              className="form-control"
-              style={{ width: "90px" }}
-            />
-          </div>
+            <div className="d-flex align-items-center gap-3 mb-3">
+              <label className="fw-semibold mb-0">Quantity:</label>
+              <input type="number" min="1" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} className="form-control" style={{ width: 100 }} />
+            </div>
 
-          <button className="btn btn-primary me-3" onClick={handleAddToCart}>
-            Add to Cart
-          </button>
-          <button className="btn btn-success" onClick={handleBuyNow}>
-            Buy Now
-          </button>
-        </div>
-      </div>
+            <div>
+              <Button variant="primary" className="me-2" onClick={handleAdd}>Add to Cart</Button>
+              <Button variant="success" onClick={handleBuyNow}>Buy Now</Button>
+            </div>
+          </Col>
+        </Row>
+      </Container>
     </main>
   );
 }

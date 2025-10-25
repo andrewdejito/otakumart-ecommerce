@@ -1,66 +1,79 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { useCart } from '../context/CartContext'; 
+import React from "react";
+import { Navbar, Nav, Container, Form, FormControl, Button, Badge } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
-function Navbar() {
-  const { cartItems } = useCart(); 
+const categories = [
+  "New Arrivals",
+  "Sales",
+  "Figures",
+  "Accessories",
+  "Manga & Books",
+  "Apparels",
+  "Plushies",
+  "Cosplay",
+];
 
-  const totalCount = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+const NavigationBar = () => {
+  const { totalItems } = useCart();
 
   return (
-    <nav className="navbar navbar-expand-lg bg-light shadow-sm">
-      <div className="container d-flex flex-column">
-
-        <div className="d-flex w-100 align-items-center justify-content-between">
-          <Link className="navbar-brand fw-bold text-primary" to="/">
+    <Navbar bg="light" expand="lg" className="shadow-sm sticky-top">
+      <Container fluid className="flex-column">
+        {/* Top Row */}
+        <div className="d-flex w-100 justify-content-between align-items-center py-2">
+          <Navbar.Brand as={Link} to="/" className="fw-bold text-primary fs-4">
             OTAKUMART
-          </Link>
+          </Navbar.Brand>
 
-          <form className="d-flex flex-grow-1 mx-4">
-            <input
-              className="form-control"
+          <Form className="d-flex mx-auto" style={{ maxWidth: "500px", flex: 1 }}>
+            <FormControl
               type="search"
               placeholder="Search products..."
+              className="me-2 rounded-pill"
               aria-label="Search"
             />
-          </form>
+            <Button variant="primary" className="rounded-pill px-3">
+              Search
+            </Button>
+          </Form>
 
-          <div className="d-flex align-items-center gap-3">
-            <Link className="nav-link" to="/signup">Sign Up</Link>
-            <Link className="nav-link" to="/login">Login</Link>
-            <Link className="nav-link position-relative" to="/cart">
+          <div className="d-flex align-items-center gap-3 ms-auto">
+            <Nav.Link as={Link} to="/signup" className="text-dark">
+              Sign Up
+            </Nav.Link>
+            <Nav.Link as={Link} to="/login" className="text-dark">
+              Login
+            </Nav.Link>
+            <Nav.Link as={Link} to="/cart" className="text-dark position-relative">
               🛒 Cart
-              {totalCount > 0 && (
-                <span
-                  className="badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle"
-                  style={{ fontSize: '0.8rem' }}
-                >
-                  {totalCount}
-                </span>
-              )}
-              {totalCount === 0 && (
-                <span className="badge bg-secondary ms-1">0</span>
-              )}
-            </Link>
+              <Badge
+                bg="secondary"
+                pill
+                className="position-absolute top-0 start-100 translate-middle"
+              >
+                {totalItems}
+              </Badge>
+            </Nav.Link>
           </div>
         </div>
 
-        <div className="w-100 mt-2">
-          <ul className="navbar-nav flex-row p-0 m-0" style={{ gap: '10px' }}>
-            <li className="nav-item text-nowrap"><Link className="nav-link" to="/new-arrivals">New Arrivals</Link></li>
-            <li className="nav-item text-nowrap"><Link className="nav-link" to="/sales">Sales</Link></li>
-            <li className="nav-item text-nowrap"><Link className="nav-link" to="/figures">Figures</Link></li>
-            <li className="nav-item text-nowrap"><Link className="nav-link" to="/accessories">Accessories</Link></li>
-            <li className="nav-item text-nowrap"><Link className="nav-link" to="/manga-books">Manga & Books</Link></li>
-            <li className="nav-item text-nowrap"><Link className="nav-link" to="/apparel">Apparels</Link></li>
-            <li className="nav-item text-nowrap"><Link className="nav-link" to="/plushies">Plushies</Link></li>
-            <li className="nav-item text-nowrap"><Link className="nav-link" to="/cosplay">Cosplay</Link></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
+        {/* Categories Row */}
+        <Nav className="justify-content-center border-top pt-2 w-100 flex-wrap">
+          {categories.map((cat) => (
+            <Nav.Link
+              as={Link}
+              key={cat}
+              to={`/products?category=${encodeURIComponent(cat)}`}
+              className="text-dark mx-3 fw-semibold"
+            >
+              {cat}
+            </Nav.Link>
+          ))}
+        </Nav>
+      </Container>
+    </Navbar>
   );
-}
+};
 
-export default Navbar;
+export default NavigationBar;

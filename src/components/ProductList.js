@@ -1,11 +1,43 @@
-// src/components/ProductList.js
-import React from "react";
-import { Link } from "react-router-dom";
-import products from "../data/products.json";
-import { useCart } from "../context/CartContext";
+// src/components/ProductList.jsx
+import React from 'react';
+import { useLocation, Link } from 'react-router-dom';
+import { Container, Row, Col, Card, Button } from 'react-bootstrap';
+import products from '../data/products.json';
+import { useCart } from '../context/CartContext';
+
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
+
+function ProductCard({ product, onAdd }) {
+  return (
+    <Card className="card-product h-100">
+      <div className="product-img">
+        <img src={product.image} alt={product.name} />
+      </div>
+      <Card.Body className="p-3 d-flex flex-column">
+        <div className="mb-2">
+          <div className="product-name">{product.name}</div>
+          <div className="text-muted small">{product.category}</div>
+        </div>
+
+        <div className="mt-auto d-flex justify-content-between align-items-center">
+          <div className="product-price">₱{product.price.toLocaleString()}</div>
+          <div>
+            <Button as={Link} to={`/product/${product.id}`} size="sm" variant="outline-primary" className="me-2">View</Button>
+            <Button size="sm" onClick={() => onAdd(product)}>Add</Button>
+          </div>
+        </div>
+      </Card.Body>
+    </Card>
+  );
+}
 
 function ProductList() {
   const { addToCart } = useCart();
+  const query = useQuery();
+  const category = query.get('category');
+  const filtered = category ? products.filter((p) => p.category === category) : products;
 
   const handleAdd = (product) => {
     addToCart({ ...product, quantity: 1 });
@@ -13,36 +45,18 @@ function ProductList() {
   };
 
   return (
-    <main className="container py-5">
-      <h2 className="fw-bold mb-4 text-center">All Products</h2>
+    <main className="app-container">
+      <Container>
+        <h2 className="fw-bold mb-4 text-center">{category || 'All Products'}</h2>
 
-      <div className="product-list-grid">
-        {products.map((product) => (
-          <div key={product.id} className="product-card">
-            <Link to={`/product/${product.id}`} className="product-link">
-              <div className="product-image">
-                <img src={product.image} alt={product.name} />
-              </div>
-
-              <div className="product-info text-start">
-                <h5 className="product-name">{product.name}</h5>
-                <p className="product-price">
-                  ₱{product.price.toLocaleString()}
-                </p>
-              </div>
-            </Link>
-
-            <div className="card-actions mt-2">
-              <button
-                className="btn btn-primary btn-sm"
-                onClick={() => handleAdd(product)}
-              >
-                Add to Cart
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+        <Row xs={1} sm={2} md={3} lg={4} className="g-3">
+          {filtered.map((product) => (
+            <Col key={product.id}>
+              <ProductCard product={product} onAdd={handleAdd} />
+            </Col>
+          ))}
+        </Row>
+      </Container>
     </main>
   );
 }
