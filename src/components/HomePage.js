@@ -5,15 +5,16 @@ import { Link } from 'react-router-dom';
 import products from '../data/products.json';
 
 const CATEGORIES = [
-  'New Arrivals',
-  'Sales',
-  'Figures',
-  'Accessories',
-  'Manga & Books',
-  'Apparels',
-  'Plushies',
-  'Cosplays'
+  "Accessories",
+  "Apparel",
+  "Figures & Collectibles",
+  "Home & Lifestyle",
+  "Limited Edition / Exclusives",
+  "Media & Games",
+  "Posters & Wall Art",
+  "Stationery & School Supplies"
 ];
+
 
 function CategoryBlock({ title, items }) {
   return (

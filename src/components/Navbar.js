@@ -4,15 +4,16 @@ import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 
 const categories = [
-  "New Arrivals",
-  "Sales",
-  "Figures",
   "Accessories",
-  "Manga & Books",
-  "Apparels",
-  "Plushies",
-  "Cosplay",
+  "Apparel",
+  "Figures & Collectibles",
+  "Home & Lifestyle",
+  "Limited Edition / Exclusives",
+  "Media & Games",
+  "Posters & Wall Art",
+  "Stationery & School Supplies"
 ];
+
 
 const NavigationBar = () => {
   const { totalItems } = useCart();
