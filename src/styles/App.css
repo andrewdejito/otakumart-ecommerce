@@ -139,3 +139,48 @@ body {
   border-color: #333 !important;
   color: #fff !important;
 }
+
+/* Center login/signup pages */
+.auth-page {
+  min-height: 70vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+}
+
+/* White form box */
+.auth-form {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Purple button to match your header */
+.btn-signup {
+  background-color: #6c3dd1 !important; /* adjust based on your purple tone */
+  border: none;
+}
+
+.btn-signup:hover {
+  background-color: #502fa5 !important;
+}
+
+/* Navbar purple background */
+.navbar-otakumart {
+  background-color: #6c3dd1;
+}
+
+.btn-search {
+  background-color: #000 !important;
+  border: none;
+  color: #fff;
+}
+
+.navbar-otakumart .nav-link,
+.navbar-otakumart .navbar-brand {
+  color: white !important;
+}
+
+.navbar-otakumart .nav-link:hover {
+  color: #ddd !important;
+}
