@@ -11,7 +11,8 @@ import Footer from './components/Footer';
 import { CartProvider } from './context/CartContext';
 import 'bootstrap/dist/css/bootstrap.min.css';  
 import './styles/App.css';                      
-
+import Signup from './pages/Signup';
+import Login from './pages/Login';
 
 function App() {
   return (
@@ -25,7 +26,8 @@ function App() {
             <Route path="/product/:id" element={<ProductDetails />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
-            {/* Keep other routes you had */}
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/login" element={<Login />} />
           </Routes>
         </div>
         <Footer />
