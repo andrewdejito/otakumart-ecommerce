@@ -19,7 +19,7 @@ const NavigationBar = () => {
   const { totalItems } = useCart();
 
   return (
-    <Navbar bg="light" expand="lg" className="shadow-sm sticky-top">
+    <Navbar expand="lg" className="shadow-sm sticky-top navbar-otakumart">
       <Container fluid className="flex-column">
         {/* Top Row */}
         <div className="d-flex w-100 justify-content-between align-items-center py-2">
@@ -34,9 +34,10 @@ const NavigationBar = () => {
               className="me-2 rounded-pill"
               aria-label="Search"
             />
-            <Button variant="primary" className="rounded-pill px-3">
+            <Button className="rounded-pill px-3 btn-search">
               Search
             </Button>
+
           </Form>
 
           <div className="d-flex align-items-center gap-3 ms-auto">
