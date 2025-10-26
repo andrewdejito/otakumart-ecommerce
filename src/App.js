@@ -9,8 +9,9 @@ import Cart from './components/Cart';
 import Checkout from './components/Checkout';
 import Footer from './components/Footer';
 import { CartProvider } from './context/CartContext';
-import './styles/App.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/css/bootstrap.min.css';  
+import './styles/App.css';                      
+
 
 function App() {
   return (
