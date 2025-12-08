@@ -3,31 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Models\CartItem;
-use App\Models\Product; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
-    // Display the cart page
+    // Get user's cart items
     public function index()
     {
         $userId = Auth::id();
+        $cartItems = CartItem::with('product.category')
+            ->where('user_id', $userId)
+            ->get();
 
-        // Get user items with product details
-        $cartItems = CartItem::with('product')->where('user_id', $userId)->get();
-
-        // Calculate subtotal
         $subtotal = $cartItems->sum(function ($item) {
             return $item->quantity * $item->product->price;
         });
 
-        return view('cart.index', compact('cartItems', 'subtotal'));
-    }
-
-    public function create()
-    {
-        //
+        return response()->json([
+            'cart_items' => $cartItems,
+            'subtotal' => $subtotal
+        ]);
     }
 
     // Add item to cart
@@ -41,43 +37,34 @@ class CartController extends Controller
         $userId = Auth::id();
         $quantity = $request->input('quantity', 1);
 
-        // Check if item exists in cart
         $cartItem = CartItem::where('user_id', $userId)
-                            ->where('product_id', $request->product_id)
-                            ->first();
+            ->where('product_id', $request->product_id)
+            ->first();
 
         if ($cartItem) {
-            // Update quantity if exists
             $cartItem->quantity += $quantity;
             $cartItem->save();
         } else {
-            // Create new entry
-            CartItem::create([
+            $cartItem = CartItem::create([
                 'user_id' => $userId,
                 'product_id' => $request->product_id,
                 'quantity' => $quantity
             ]);
         }
 
-        return redirect()->back()->with('success', 'Item added to cart!');
-    }
-
-    public function show(CartItem $cartItem)
-    {
-        //
-    }
-
-    public function edit(CartItem $cartItem)
-    {
-        //
+        return response()->json([
+            'message' => 'Item added to cart',
+            'cart_item' => $cartItem->load('product')
+        ], 201);
     }
 
     // Update item quantity
-    public function update(Request $request, CartItem $cartItem)
+    public function update(Request $request, $id)
     {
-        // Verify ownership
+        $cartItem = CartItem::findOrFail($id);
+
         if ($cartItem->user_id !== Auth::id()) {
-            abort(403);
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $request->validate([
@@ -86,19 +73,32 @@ class CartController extends Controller
 
         $cartItem->update(['quantity' => $request->quantity]);
 
-        return redirect()->route('cart.index')->with('success', 'Cart updated!');
+        return response()->json([
+            'message' => 'Cart updated',
+            'cart_item' => $cartItem->load('product')
+        ]);
     }
 
     // Remove item from cart
-    public function destroy(CartItem $cartItem)
+    public function destroy($id)
     {
-        // Verify ownership
+        $cartItem = CartItem::findOrFail($id);
+
         if ($cartItem->user_id !== Auth::id()) {
-            abort(403);
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $cartItem->delete();
 
-        return redirect()->route('cart.index')->with('success', 'Item removed.');
+        return response()->json(['message' => 'Item removed from cart']);
+    }
+
+    // Clear entire cart
+    public function clear()
+    {
+        $userId = Auth::id();
+        CartItem::where('user_id', $userId)->delete();
+
+        return response()->json(['message' => 'Cart cleared']);
     }
 }
