@@ -1,25 +1,6 @@
+version: '3.8'
+
 services:
-  # Laravel Backend
-  app:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: laravel-app
-    volumes:
-      - ./backend:/var/www/html
-    ports:
-      - "9000:9000"
-    depends_on:
-      - db
-
-  # Composer Container
-  composer:
-    image: composer:latest
-    working_dir: /var/www/html
-    volumes:
-      - ./backend:/var/www/html
-    entrypoint: ["composer"]
-
   # MySQL Database
   db:
     image: mysql:8.0
@@ -32,8 +13,35 @@ services:
       - "3307:3306"
     volumes:
       - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      timeout: 20s
+      retries: 10
+      interval: 5s
 
-  # React Frontend (Production build)
+  # Laravel Backend
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: laravel-app
+    volumes:
+      - ./backend:/var/www/html
+    ports:
+      - "8000:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=otakumart
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - APP_ENV=local
+      - APP_DEBUG=true
+
+  # React Frontend
   frontend:
     build:
       context: ./frontend
@@ -41,8 +49,8 @@ services:
     container_name: react-prod
     ports:
       - "8080:8080"
+    depends_on:
+      - app
 
 volumes:
   dbdata:
-  node_modules:
-
