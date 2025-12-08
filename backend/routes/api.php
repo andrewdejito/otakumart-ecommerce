@@ -13,8 +13,10 @@ use App\Http\Controllers\CategoryController;
 */
 
 // PUBLIC ROUTES
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login',    [AuthController::class, 'login']);
+Route::middleware('api')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+});
 
 // Public product/catalog routes (users don't need login to view)
 Route::get('/products', [ProductController::class, 'index']);

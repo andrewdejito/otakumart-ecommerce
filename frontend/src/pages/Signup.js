@@ -1,20 +1,72 @@
-import React from "react";
+import React, { useState } from "react";
 import { Form, Button, Container } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 function Signup() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      const res = await fetch("http://192.168.99.100:8082/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json",
+          "Accept": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || "Signup failed");
+
+      // store token in localStorage
+      localStorage.setItem("authToken", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      navigate("/"); // redirect to homepage
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   return (
     <main className="auth-page">
       <Container className="d-flex justify-content-center align-items-center flex-column">
         <h2 className="fw-bold mb-4">Create Account</h2>
-        <Form className="auth-form p-4 rounded-3 shadow-sm bg-white">
+        <Form onSubmit={handleSubmit} className="auth-form p-4 rounded-3 shadow-sm bg-white">
+          {error && <p className="text-danger">{error}</p>}
           <Form.Group className="mb-3">
-            <Form.Control type="text" placeholder="Username" />
+            <Form.Control
+              type="text"
+              placeholder="Username"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Control type="email" placeholder="Email" />
+            <Form.Control
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </Form.Group>
           <Form.Group className="mb-4">
-            <Form.Control type="password" placeholder="Password" />
+            <Form.Control
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </Form.Group>
           <Button variant="primary" type="submit" className="w-100 btn-signup">
             Sign Up
