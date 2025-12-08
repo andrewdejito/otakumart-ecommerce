@@ -1,8 +1,8 @@
 // src/components/Homepage.jsx
 import React from 'react';
-import { Container, Row, Col, Card, Button } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Spinner, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import products from '../data/products.json';
+import { useProducts } from '../data/products'; // import the hook
 
 const CATEGORIES = [
   "Accessories",
@@ -14,7 +14,6 @@ const CATEGORIES = [
   "Posters & Wall Art",
   "Stationery & School Supplies"
 ];
-
 
 function CategoryBlock({ title, items }) {
   return (
@@ -29,15 +28,15 @@ function CategoryBlock({ title, items }) {
           <Col key={p.id}>
             <Card className="card-product h-100">
               <div className="product-img">
-                <img src={p.image} alt={p.name} />
+                <img src={`http://192.168.99.100:8082/${p.image}`} alt={p.name} />
               </div>
               <Card.Body className="p-3">
                 <div className="d-flex justify-content-between align-items-start mb-2">
                   <div>
                     <div className="product-name">{p.name}</div>
-                    <div className="text-muted small">{p.category}</div>
+                    <div className="text-muted small">{p.category?.name || p.category}</div>
                   </div>
-                  <div className="product-price">₱{p.price.toLocaleString()}</div>
+                  <div className="product-price">₱{Number(p.price).toLocaleString()}</div>
                 </div>
                 <div className="d-flex justify-content-between">
                   <Button as={Link} to={`/product/${p.id}`} size="sm" variant="outline-primary">View</Button>
@@ -53,6 +52,12 @@ function CategoryBlock({ title, items }) {
 }
 
 function Homepage() {
+  // Use the hook to fetch products
+  const { products, loading, error } = useProducts();
+
+  if (loading) return <Spinner animation="border" />;
+  if (error) return <Alert variant="danger">Error fetching products: {error.message}</Alert>;
+
   return (
     <main className="app-container">
       <Container>
@@ -61,8 +66,16 @@ function Homepage() {
         </div>
 
         {CATEGORIES.map((cat) => {
-          const items = products.filter((p) => p.category === cat).slice(0, 6);
+          // For each category, filter products from the API
+          const items = products.filter((p) => {
+            // If backend returns category object
+            if (p.category && p.category.name) return p.category.name === cat;
+            // If JSON used plain string
+            return p.category === cat;
+          }).slice(0, 6);
+
           if (items.length === 0) return null;
+
           return <CategoryBlock key={cat} title={cat} items={items} />;
         })}
       </Container>

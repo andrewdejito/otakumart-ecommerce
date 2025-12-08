@@ -13,9 +13,11 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
+            $table->string('image')->nullable();
             $table->unsignedBigInteger('category_id');
             $table->timestamps();
 
+            // Foreign key to categories table
             $table->foreign('category_id')
                   ->references('id')
                   ->on('categories')

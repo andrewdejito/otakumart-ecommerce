@@ -10,14 +10,14 @@ class ProductController extends Controller
     // List all products
     public function index()
     {
-        $products = Product::all();
+        $products = Product::with('category')->get();
         return response()->json($products);
     }
 
     // Show a single product
     public function show($id)
     {
-        $product = Product::find($id);
+        $product = Product::with('category')->find($id);
         if (!$product) {
             return response()->json(['message' => 'Product not found'], 404);
         }

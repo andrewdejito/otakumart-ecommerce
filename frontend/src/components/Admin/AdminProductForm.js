@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import products from "../../data/products.json";
+import products from "../../data/products";
 
 function AdminProductForm() {
   const [products, setProducts] = useState([]);
