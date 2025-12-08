@@ -1,28 +1,47 @@
-version: "3.9"
-
 services:
-  react-dev:
-    image: node:20-alpine
-    container_name: react-dev
-    working_dir: /app
+  # Laravel Backend
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: laravel-app
     volumes:
-      - .:/app
-      - node_modules:/app/node_modules
+      - ./backend:/var/www/html
     ports:
-      - "3000:3000"
+      - "9000:9000"
+    depends_on:
+      - db
+
+  # Composer Container
+  composer:
+    image: composer:latest
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+    entrypoint: ["composer"]
+
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: always
     environment:
-      - CHOKIDAR_USEPOLLING=true
-      - WATCHPACK_POLLING=true
-      - FAST_REFRESH=true
-    command: sh -c "npm install && npm start"
-    stdin_open: true
-    tty: true
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: otakumart
+    ports:
+      - "3307:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+
+  # React Frontend (Production build)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: react-prod
+    ports:
+      - "8080:8080"
 
 volumes:
+  dbdata:
   node_modules:
