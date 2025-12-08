@@ -1,7 +1,10 @@
-import React, { useState } from "react";
-import { Navbar, Nav, Container, Form, FormControl, Button, Badge, NavDropdown } from "react-bootstrap";
+import React from "react";
+import {
+  Navbar, Nav, Container, Form, FormControl, Button, Badge, NavDropdown
+} from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 
 const categories = [
   "Accessories",
@@ -16,10 +19,9 @@ const categories = [
 
 const NavigationBar = () => {
   const { totalItems } = useCart();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
 
-  // Handle cart click
   const handleCartClick = (e) => {
     if (!user) {
       e.preventDefault();
@@ -28,12 +30,9 @@ const NavigationBar = () => {
     }
   };
 
-  // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("authToken");
-    setUser(null);
-    navigate("/login");
+    logout();
+    navigate("/");
   };
 
   return (
@@ -52,23 +51,16 @@ const NavigationBar = () => {
               className="me-2 rounded-pill"
               aria-label="Search"
             />
-            <Button className="rounded-pill px-3 btn-search">
-              Search
-            </Button>
+            <Button className="rounded-pill px-3 btn-search">Search</Button>
           </Form>
 
           <div className="d-flex align-items-center gap-3 ms-auto">
             {user ? (
               <>
-                {/* Profile Dropdown */}
                 <NavDropdown title={`${user.name}`} id="user-dropdown" align="end">
-                  <NavDropdown.Item as={Link} to="/profile">
-                    Profile
-                  </NavDropdown.Item>
+                  <NavDropdown.Item as={Link} to="/profile">Profile</NavDropdown.Item>
                   <NavDropdown.Divider />
-                  <NavDropdown.Item onClick={handleLogout}>
-                    Logout
-                  </NavDropdown.Item>
+                  <NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
                 </NavDropdown>
 
                 <Nav.Link
@@ -89,12 +81,8 @@ const NavigationBar = () => {
               </>
             ) : (
               <>
-                <Nav.Link as={Link} to="/signup" className="text-dark">
-                  Sign Up
-                </Nav.Link>
-                <Nav.Link as={Link} to="/login" className="text-dark">
-                  Login
-                </Nav.Link>
+                <Nav.Link as={Link} to="/signup" className="text-dark">Sign Up</Nav.Link>
+                <Nav.Link as={Link} to="/login" className="text-dark">Login</Nav.Link>
                 <Nav.Link
                   as={Link}
                   to="/cart"

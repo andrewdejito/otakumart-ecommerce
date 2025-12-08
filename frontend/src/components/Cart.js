@@ -1,5 +1,5 @@
 // src/components/Cart.jsx
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Container, Table, Button } from 'react-bootstrap';
 import { useCart } from '../context/CartContext';
@@ -7,32 +7,22 @@ import { useCart } from '../context/CartContext';
 function Cart() {
   const { cartItems, removeFromCart, updateCartItemQuantity } = useCart();
   const navigate = useNavigate();
-  // local version state to force updates if context doesn't provide update function
-  const [, setVersion] = useState(0);
 
   const increaseQty = (item) => {
-    if (updateCartItemQuantity) {
-      updateCartItemQuantity(item.id, (item.quantity || 1) + 1);
-    } else {
-      item.quantity = (item.quantity || 1) + 1;
-      setVersion((v) => v + 1);
-    }
+    const newQty = (item.quantity || 1) + 1;
+    updateCartItemQuantity(item.id, newQty);
   };
 
   const decreaseQty = (item) => {
     const current = item.quantity || 1;
     if (current <= 1) return;
-    if (updateCartItemQuantity) {
-      updateCartItemQuantity(item.id, current - 1);
-    } else {
-      item.quantity = current - 1;
-      setVersion((v) => v + 1);
-    }
+    const newQty = current - 1;
+    updateCartItemQuantity(item.id, newQty);
   };
 
   const getTotal = () =>
     cartItems.reduce(
-      (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
+      (sum, item) => sum + (item.product?.price || 0) * (item.quantity || 1),
       0
     );
 
@@ -45,8 +35,7 @@ function Cart() {
   };
 
   const handleRemove = (id, name) => {
-    const confirmDelete = window.confirm(`Are you sure you want to remove "${name}" from your cart?`);
-    if (confirmDelete) {
+    if (window.confirm(`Are you sure you want to remove "${name}" from your cart?`)) {
       removeFromCart(id);
       alert(`🗑️ "${name}" has been removed from your cart.`);
     }
@@ -76,10 +65,16 @@ function Cart() {
               {cartItems.map((item) => (
                 <tr key={item.id}>
                   <td className="d-flex align-items-center gap-3">
-                    <img src={item.image} alt={item.name} width="70" height="70" style={{ objectFit: 'cover', borderRadius: 8 }} />
+                    <img
+                      src={`http://192.168.99.100:8082/${item.product?.image || ''}`}
+                      alt={item.product?.name || 'Product'}
+                      width="70"
+                      height="70"
+                      style={{ objectFit: 'cover', borderRadius: 8 }}
+                    />
                     <div>
-                      <p className="m-0 fw-semibold">{item.name}</p>
-                      <p className="text-muted small m-0">₱{item.price.toLocaleString()}</p>
+                      <p className="m-0 fw-semibold">{item.product?.name || 'Product'}</p>
+                      <p className="text-muted small m-0">₱{(item.product?.price || 0).toLocaleString()}</p>
                     </div>
                   </td>
                   <td>
@@ -89,9 +84,11 @@ function Cart() {
                       <Button variant="outline-secondary" size="sm" onClick={() => increaseQty(item)}>+</Button>
                     </div>
                   </td>
-                  <td>₱{(item.price * (item.quantity || 1)).toLocaleString()}</td>
+                  <td>₱{((item.product?.price || 0) * (item.quantity || 1)).toLocaleString()}</td>
                   <td>
-                    <Button variant="danger" size="sm" onClick={() => handleRemove(item.id, item.name)}>Remove</Button>
+                    <Button variant="danger" size="sm" onClick={() => handleRemove(item.id, item.product?.name || 'Product')}>
+                      Remove
+                    </Button>
                   </td>
                 </tr>
               ))}

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CartController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,6 +17,13 @@ use App\Http\Controllers\CategoryController;
 Route::middleware('api')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/cart', [CartController::class, 'index']);           
+    Route::post('/cart', [CartController::class, 'store']);          
+    Route::put('/cart/{productId}', [CartController::class, 'update']); 
+    Route::delete('/cart/{productId}', [CartController::class, 'destroy']);
 });
 
 // Public product/catalog routes (users don't need login to view)

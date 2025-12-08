@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
 
-export function OrderDetails() {
+const OrderDetails = () => {
   const { id } = useParams();
   return (
     <div className="container mt-4">
@@ -18,4 +18,6 @@ export function OrderDetails() {
       </Link>
     </div>
   );
-}
+};
+
+export default OrderDetails;

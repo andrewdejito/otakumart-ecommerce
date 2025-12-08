@@ -1,9 +1,9 @@
-// src/components/ProductList.jsx
-import React from 'react';
-import { useLocation, Link } from 'react-router-dom';
-import { Container, Row, Col, Card, Button, Spinner, Alert } from 'react-bootstrap';
-import { useProducts } from '../data/products'; // use hook
-import { useCart } from '../context/CartContext';
+import React from "react";
+import { useLocation, Link, useNavigate } from "react-router-dom";
+import { Container, Row, Col, Card, Button, Spinner, Alert } from "react-bootstrap";
+import { useProducts } from "../data/products";
+import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -24,8 +24,18 @@ function ProductCard({ product, onAdd }) {
         <div className="mt-auto d-flex justify-content-between align-items-center">
           <div className="product-price">₱{Number(product.price).toLocaleString()}</div>
           <div>
-            <Button as={Link} to={`/product/${product.id}`} size="sm" variant="outline-primary" className="me-2">View</Button>
-            <Button size="sm" onClick={() => onAdd(product)}>Add</Button>
+            <Button
+              as={Link}
+              to={`/product/${product.id}`}
+              size="sm"
+              variant="outline-primary"
+              className="me-2"
+            >
+              View
+            </Button>
+            <Button size="sm" onClick={() => onAdd(product)}>
+              Add
+            </Button>
           </div>
         </div>
       </Card.Body>
@@ -36,12 +46,18 @@ function ProductCard({ product, onAdd }) {
 function ProductList() {
   const { products, loading, error } = useProducts();
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const query = useQuery();
-  const category = query.get('category');
+  const navigate = useNavigate();
+  const category = query.get("category");
 
   const handleAdd = (product) => {
-    addToCart({ ...product, quantity: 1 });
-    alert(`${product.name} added to cart`);
+    if (!user) {
+      alert("Please login first!");
+      navigate("/login");
+      return;
+    }
+    addToCart(product, 1);
   };
 
   if (loading) return <Spinner animation="border" />;
@@ -54,8 +70,7 @@ function ProductList() {
   return (
     <main className="app-container">
       <Container>
-        <h2 className="fw-bold mb-4 text-center">{category || 'All Products'}</h2>
-
+        <h2 className="fw-bold mb-4 text-center">{category || "All Products"}</h2>
         <Row xs={1} sm={2} md={3} lg={4} className="g-3">
           {filtered.map((product) => (
             <Col key={product.id}>

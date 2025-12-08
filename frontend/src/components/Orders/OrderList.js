@@ -6,7 +6,7 @@ const sampleOrders = [
   { id: 102, customer: "Bob", total: 1200 },
 ];
 
-export function OrderList() {
+const OrderList = () => {
   return (
     <div className="container mt-4">
       <h3>Order List</h3>
@@ -36,4 +36,6 @@ export function OrderList() {
       </table>
     </div>
   );
-}
+};
+
+export default OrderList;
