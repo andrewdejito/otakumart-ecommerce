@@ -1,82 +1,61 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Alert } from "react-bootstrap";
+import { useAuth } from "../../context/AuthContext";
 
 function AdminLogin() {
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
-      const response = await fetch(`${apiUrl}/login`, {
+      const res = await fetch("http://192.168.99.100:8082/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ email, password, role: "admin" }), // enforce admin login
       });
 
-      const data = await response.json();
+      const data = await res.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
-      }
+      if (!res.ok) throw new Error(data.message || "Login failed");
 
-      // Check if user is admin
-      if (data.user.role !== 'admin') {
-        throw new Error("Access denied - Admin only");
-      }
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      
-      navigate("/admin/products");
+      login(data.user, data.token);
+      navigate("/admin/products"); // redirect to admin products
     } catch (err) {
       setError(err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
     <div className="container mt-5" style={{ maxWidth: "400px" }}>
       <h3 className="mb-3">Admin Login</h3>
-      {error && <Alert variant="danger">{error}</Alert>}
+      {error && <p className="text-danger">{error}</p>}
       <form onSubmit={handleLogin}>
         <input
           type="email"
-          name="email"
           className="form-control mb-2"
           placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
         <input
           type="password"
-          name="password"
           className="form-control mb-2"
           placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
+        <button type="submit" className="btn btn-primary w-100">
+          Login
         </button>
       </form>
-      <div className="mt-3 text-muted small">
-        <p>Test Admin: admin@example.com / password</p>
-      </div>
     </div>
   );
 }

@@ -3,27 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Models\CartItem;
+use App\Models\Product; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
-    // Get user's cart items
+    // Get all cart items for the logged-in user
     public function index()
     {
         $userId = Auth::id();
-        $cartItems = CartItem::with('product.category')
-            ->where('user_id', $userId)
-            ->get();
+        $cartItems = CartItem::with('product')->where('user_id', $userId)->get();
 
-        $subtotal = $cartItems->sum(function ($item) {
-            return $item->quantity * $item->product->price;
+        $cart = $cartItems->map(function($item) {
+            return [
+                'id' => $item->id,          // cart item ID
+                'quantity' => $item->quantity,
+                'product' => $item->product
+            ];
         });
 
-        return response()->json([
-            'cart_items' => $cartItems,
-            'subtotal' => $subtotal
-        ]);
+        return response()->json(['cartItems' => $cart]);
     }
 
     // Add item to cart
@@ -38,67 +38,46 @@ class CartController extends Controller
         $quantity = $request->quantity ?? 1;
 
         $cartItem = CartItem::where('user_id', $userId)
-            ->where('product_id', $request->product_id)
-            ->first();
+                            ->where('product_id', $request->product_id)
+                            ->first();
 
         if ($cartItem) {
             $cartItem->quantity += $quantity;
             $cartItem->save();
         } else {
-            $cartItem = CartItem::create([
+            CartItem::create([
                 'user_id' => $userId,
                 'product_id' => $request->product_id,
                 'quantity' => $quantity
             ]);
         }
 
-        return response()->json([
-            'message' => 'Item added to cart',
-            'cart_item' => $cartItem->load('product')
-        ], 201);
+        return $this->index(); // return updated cart
     }
 
-    // Update item quantity
-    public function update(Request $request, $id)
+    // Update quantity of a cart item
+    public function update(Request $request, $cartItemId)
     {
-        $cartItem = CartItem::findOrFail($id);
+        $request->validate(['quantity' => 'required|integer|min:1']);
+        $cartItem = CartItem::where('user_id', Auth::id())
+                            ->where('id', $cartItemId) // use cart item ID now
+                            ->firstOrFail();
 
-        if ($cartItem->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $cartItem->quantity = $request->quantity;
+        $cartItem->save();
 
-        $request->validate([
-            'quantity' => 'required|integer|min:1'
-        ]);
-
-        $cartItem->update(['quantity' => $request->quantity]);
-
-        return response()->json([
-            'message' => 'Cart updated',
-            'cart_item' => $cartItem->load('product')
-        ]);
+        return $this->index(); // return updated cart
     }
 
     // Remove item from cart
-    public function destroy($id)
+    public function destroy($cartItemId)
     {
-        $cartItem = CartItem::findOrFail($id);
-
-        if ($cartItem->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $cartItem = CartItem::where('user_id', Auth::id())
+                            ->where('id', $cartItemId) // use cart item ID
+                            ->firstOrFail();
 
         $cartItem->delete();
 
-        return response()->json(['message' => 'Item removed from cart']);
-    }
-
-    // Clear entire cart
-    public function clear()
-    {
-        $userId = Auth::id();
-        CartItem::where('user_id', $userId)->delete();
-
-        return response()->json(['message' => 'Cart cleared']);
+        return $this->index(); // return updated cart
     }
 }
