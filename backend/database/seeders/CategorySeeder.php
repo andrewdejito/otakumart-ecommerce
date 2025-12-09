@@ -10,7 +10,12 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        $categories = ['Electronics', 'Clothing'];
+        // Read the JSON file
+        $json = file_get_contents(database_path('seeders/products.json'));
+        $products = json_decode($json, true);
+
+        // Extract unique categories
+        $categories = collect($products)->pluck('category')->unique();
 
         foreach ($categories as $name) {
             Category::updateOrCreate(

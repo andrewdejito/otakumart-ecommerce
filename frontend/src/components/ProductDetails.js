@@ -1,27 +1,63 @@
-// src/components/ProductDetails.jsx
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Button } from 'react-bootstrap';
-import products from '../data/products.json';
-import { useCart } from '../context/CartContext';
+import React, { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Container, Row, Col, Button, Spinner, Alert } from "react-bootstrap";
+import { useProducts } from "../data/products";
+import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 
 function ProductDetails() {
   const { id } = useParams();
-  const product = products.find((p) => p.id === Number(id));
+  const { products, loading, error } = useProducts();
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
+  const [adding, setAdding] = useState(false); // loading state
 
-  if (!product) return <Container className="app-container"><p>Product not found.</p></Container>;
+  if (loading) return <Spinner animation="border" className="d-block mx-auto mt-4" />;
+  if (error) return <Alert variant="danger">Error: {error.message}</Alert>;
 
-  const handleAdd = () => {
-    addToCart({ ...product, quantity });
-    alert(`${quantity} × ${product.name} added to cart`);
+  const product = products.find((p) => p.id === Number(id));
+  if (!product)
+    return (
+      <Container className="app-container">
+        <p>Product not found.</p>
+      </Container>
+    );
+
+  const handleAdd = async () => {
+    if (!user) {
+      alert("Please login first!");
+      navigate("/login");
+      return;
+    }
+
+    setAdding(true);
+    try {
+      await addToCart(product, quantity);
+    } catch (err) {
+      alert("Failed to add to cart: " + err.message);
+    } finally {
+      setAdding(false);
+    }
   };
 
-  const handleBuyNow = () => {
-    addToCart({ ...product, quantity });
-    navigate('/checkout');
+  const handleBuyNow = async () => {
+    if (!user) {
+      alert("Please login first!");
+      navigate("/login");
+      return;
+    }
+
+    setAdding(true);
+    try {
+      await addToCart(product, quantity);
+      navigate("/checkout");
+    } catch (err) {
+      alert("Failed to add to cart: " + err.message);
+    } finally {
+      setAdding(false);
+    }
   };
 
   return (
@@ -30,22 +66,50 @@ function ProductDetails() {
         <h2 className="fw-bold mb-4">Product Details</h2>
         <Row className="g-4">
           <Col md={5} className="text-center">
-            <img src={product.image} alt={product.name} className="img-fluid rounded" style={{ maxHeight: 400, objectFit: 'contain' }} />
+            <img
+              src={`http://192.168.99.100:8082/${product.image}`}
+              alt={product.name}
+              className="img-fluid rounded"
+              style={{ maxHeight: 400, objectFit: "contain" }}
+            />
           </Col>
 
           <Col md={7}>
             <h3 className="fw-bold">{product.name}</h3>
-            <p className="fs-4 text-danger">₱{product.price.toLocaleString()}</p>
+            <p className="fs-4 text-danger">
+              ₱{Number(product.price).toLocaleString()}
+            </p>
             <p className="text-muted">{product.description}</p>
 
             <div className="d-flex align-items-center gap-3 mb-3">
               <label className="fw-semibold mb-0">Quantity:</label>
-              <input type="number" min="1" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} className="form-control" style={{ width: 100 }} />
+              <input
+                type="number"
+                min="1"
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                className="form-control"
+                style={{ width: 100 }}
+                disabled={adding}
+              />
             </div>
 
             <div>
-              <Button variant="primary" className="me-2" onClick={handleAdd}>Add to Cart</Button>
-              <Button variant="success" onClick={handleBuyNow}>Buy Now</Button>
+              <Button
+                variant="primary"
+                className="me-2"
+                onClick={handleAdd}
+                disabled={adding}
+              >
+                {adding ? "Adding..." : "Add to Cart"}
+              </Button>
+              <Button
+                variant="success"
+                onClick={handleBuyNow}
+                disabled={adding}
+              >
+                {adding ? "Adding..." : "Buy Now"}
+              </Button>
             </div>
           </Col>
         </Row>

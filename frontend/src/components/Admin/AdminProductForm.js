@@ -20,6 +20,7 @@ function AdminProductForm() {
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
   const token = localStorage.getItem('token');
 
+  // Redirect non-admin users
   useEffect(() => {
     fetchProducts();
     fetchCategories();
@@ -46,7 +47,12 @@ function AdminProductForm() {
   };
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value, files } = e.target;
+    if (name === "image") {
+      setForm({ ...form, image: files[0] });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -87,9 +93,8 @@ function AdminProductForm() {
     }
   };
 
-  const handleEdit = (product) => {
-    setForm(product);
-  };
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to add product");
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this product?")) return;
@@ -214,8 +219,25 @@ function AdminProductForm() {
               </td>
             </tr>
           ))}
-        </tbody>
-      </table>
+        </select>
+        <textarea
+          name="description"
+          value={form.description}
+          placeholder="Description"
+          className="form-control mb-2"
+          onChange={handleChange}
+        />
+        <input
+          type="file"
+          name="image"
+          className="form-control mb-2"
+          onChange={handleChange}
+          accept="image/*"
+        />
+        <button className="btn btn-success" disabled={loading}>
+          {loading ? "Adding..." : "Add"}
+        </button>
+      </form>
     </div>
   );
 }

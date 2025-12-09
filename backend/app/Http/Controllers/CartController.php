@@ -35,7 +35,7 @@ class CartController extends Controller
         ]);
 
         $userId = Auth::id();
-        $quantity = $request->input('quantity', 1);
+        $quantity = $request->quantity ?? 1;
 
         $cartItem = CartItem::where('user_id', $userId)
             ->where('product_id', $request->product_id)

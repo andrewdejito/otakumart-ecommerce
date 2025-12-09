@@ -4,6 +4,7 @@ import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { useCart } from '../context/CartContext';
 
 function ProductList() {
+  const { products, loading, error } = useProducts();
   const { addToCart } = useCart();
   const query = new URLSearchParams(useLocation().search);
   const category = query.get('category');
@@ -37,10 +38,43 @@ useEffect(() => {
     ? products.filter((p) => p.category?.name === category) 
     : products;
 
-  const handleAdd = (product) => {
-    addToCart({ ...product, quantity: 1 });
-    alert(`${product.name} added to cart`);
+  const [addingId, setAddingId] = useState(null); // track product being added
+
+  const handleAdd = async (product) => {
+    if (!user) {
+      alert("Please login first!");
+      navigate("/login");
+      return;
+    }
+
+    setAddingId(product.id);
+    try {
+      await addToCart(product, 1);
+    } catch (err) {
+      alert("Failed to add to cart: " + err.message);
+    } finally {
+      setAddingId(null);
+    }
   };
+
+  if (loading) return <Spinner animation="border" className="d-block mx-auto mt-4" />;
+  if (error) return <Alert variant="danger">Error fetching products: {error.message}</Alert>;
+
+  // Filter products by category and search term
+  let filtered = products;
+  if (category) {
+    filtered = filtered.filter(
+      (p) => (p.category?.name || p.category)?.toLowerCase() === category.toLowerCase()
+    );
+  }
+
+  if (searchTerm) {
+    filtered = filtered.filter(
+      (p) =>
+        p.name.toLowerCase().includes(searchTerm) ||
+        (p.category?.name || p.category)?.toLowerCase().includes(searchTerm)
+    );
+  }
 
   return (
     <main className="app-container">

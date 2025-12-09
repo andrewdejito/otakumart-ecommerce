@@ -1,38 +1,51 @@
-// src/components/Cart.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Container, Table, Button } from 'react-bootstrap';
+import { Container, Table, Button, Spinner } from 'react-bootstrap';
 import { useCart } from '../context/CartContext';
 
 function Cart() {
   const { cartItems, removeFromCart, updateCartItemQuantity } = useCart();
   const navigate = useNavigate();
-  // local version state to force updates if context doesn't provide update function
-  const [, setVersion] = useState(0);
 
-  const increaseQty = (item) => {
-    if (updateCartItemQuantity) {
-      updateCartItemQuantity(item.id, (item.quantity || 1) + 1);
-    } else {
-      item.quantity = (item.quantity || 1) + 1;
-      setVersion((v) => v + 1);
+  const [loadingItemId, setLoadingItemId] = useState(null); // track which item is loading
+
+  const increaseQty = async (item) => {
+    setLoadingItemId(item.id);
+    try {
+      const newQty = (item.quantity || 1) + 1;
+      await updateCartItemQuantity(item.id, newQty);
+    } finally {
+      setLoadingItemId(null);
     }
   };
 
-  const decreaseQty = (item) => {
+  const decreaseQty = async (item) => {
     const current = item.quantity || 1;
     if (current <= 1) return;
-    if (updateCartItemQuantity) {
-      updateCartItemQuantity(item.id, current - 1);
-    } else {
-      item.quantity = current - 1;
-      setVersion((v) => v + 1);
+    setLoadingItemId(item.id);
+    try {
+      const newQty = current - 1;
+      await updateCartItemQuantity(item.id, newQty);
+    } finally {
+      setLoadingItemId(null);
+    }
+  };
+
+  const handleRemove = async (id, name) => {
+    if (!window.confirm(`Are you sure you want to remove "${name}" from your cart?`)) return;
+
+    setLoadingItemId(id);
+    try {
+      await removeFromCart(id);
+      alert(`🗑️ "${name}" has been removed from your cart.`);
+    } finally {
+      setLoadingItemId(null);
     }
   };
 
   const getTotal = () =>
     cartItems.reduce(
-      (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
+      (sum, item) => sum + (item.product?.price || 0) * (item.quantity || 1),
       0
     );
 
@@ -44,14 +57,6 @@ function Cart() {
     navigate('/checkout');
   };
 
-  const handleRemove = (id, name) => {
-    const confirmDelete = window.confirm(`Are you sure you want to remove "${name}" from your cart?`);
-    if (confirmDelete) {
-      removeFromCart(id);
-      alert(`🗑️ "${name}" has been removed from your cart.`);
-    }
-  };
-
   return (
     <Container className="app-container">
       <h2 className="fw-bold mb-4">Your Cart</h2>
@@ -59,7 +64,8 @@ function Cart() {
       {cartItems.length === 0 ? (
         <div className="text-center">
           <p>Your cart is currently empty.</p>
-          <Link to="/products" className="btn btn-primary">Continue Shopping</Link>
+          <Link to="/products" className="btn btn-primary me-2">Continue Shopping</Link>
+          <Link to="/orders" className="btn btn-secondary">View My Orders</Link>
         </div>
       ) : (
         <>
@@ -76,22 +82,49 @@ function Cart() {
               {cartItems.map((item) => (
                 <tr key={item.id}>
                   <td className="d-flex align-items-center gap-3">
-                    <img src={item.image} alt={item.name} width="70" height="70" style={{ objectFit: 'cover', borderRadius: 8 }} />
+                    <img
+                      src={`http://192.168.99.100:8082/${item.product?.image || ''}`}
+                      alt={item.product?.name || 'Product'}
+                      width="70"
+                      height="70"
+                      style={{ objectFit: 'cover', borderRadius: 8 }}
+                    />
                     <div>
-                      <p className="m-0 fw-semibold">{item.name}</p>
-                      <p className="text-muted small m-0">₱{item.price.toLocaleString()}</p>
+                      <p className="m-0 fw-semibold">{item.product?.name || 'Product'}</p>
+                      <p className="text-muted small m-0">₱{(item.product?.price || 0).toLocaleString()}</p>
                     </div>
                   </td>
                   <td>
                     <div className="d-flex align-items-center justify-content-center">
-                      <Button variant="outline-secondary" size="sm" onClick={() => decreaseQty(item)}>-</Button>
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        onClick={() => decreaseQty(item)}
+                        disabled={loadingItemId === item.id}
+                      >
+                        {loadingItemId === item.id ? <Spinner animation="border" size="sm" /> : "-"}
+                      </Button>
                       <span className="mx-3">{item.quantity || 1}</span>
-                      <Button variant="outline-secondary" size="sm" onClick={() => increaseQty(item)}>+</Button>
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        onClick={() => increaseQty(item)}
+                        disabled={loadingItemId === item.id}
+                      >
+                        {loadingItemId === item.id ? <Spinner animation="border" size="sm" /> : "+"}
+                      </Button>
                     </div>
                   </td>
-                  <td>₱{(item.price * (item.quantity || 1)).toLocaleString()}</td>
+                  <td>₱{((item.product?.price || 0) * (item.quantity || 1)).toLocaleString()}</td>
                   <td>
-                    <Button variant="danger" size="sm" onClick={() => handleRemove(item.id, item.name)}>Remove</Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleRemove(item.id, item.product?.name || 'Product')}
+                      disabled={loadingItemId === item.id}
+                    >
+                      {loadingItemId === item.id ? <Spinner animation="border" size="sm" /> : "Remove"}
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -103,6 +136,7 @@ function Cart() {
               Subtotal: <span className="text-primary">₱{getTotal().toLocaleString()}</span>
             </h5>
             <Button variant="primary" onClick={handleCheckout}>Checkout</Button>
+            <Button variant="secondary" onClick={() => navigate('/orders')}>View My Orders</Button>
           </div>
         </>
       )}

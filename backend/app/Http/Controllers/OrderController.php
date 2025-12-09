@@ -31,6 +31,9 @@ class OrderController extends Controller
 
         return response()->json($order);
     }
+    public function adminIndex()
+{
+    $orders = Order::with(['user', 'orderItems.product'])->get(); // include user and products
 
     // Create order from cart
     public function store(Request $request)
