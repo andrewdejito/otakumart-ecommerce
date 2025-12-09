@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-function AdminProductForm() {
+function AdminProductEdit() {
   const { token, user } = useAuth();
   const navigate = useNavigate();
+  const { id } = useParams();
+
   const [form, setForm] = useState({
     name: "",
     price: "",
@@ -13,7 +15,8 @@ function AdminProductForm() {
     image: null,
   });
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // for update
+  const [fetching, setFetching] = useState(true); // for initial data
 
   // Redirect non-admin users
   useEffect(() => {
@@ -26,22 +29,46 @@ function AdminProductForm() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch("http://192.168.99.100:8082/api/admin/categories", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+          "http://192.168.99.100:8082/api/admin/categories",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
         if (!res.ok) throw new Error("Failed to fetch categories");
         const data = await res.json();
         setCategories(data);
-
-        if (data.length) {
-          setForm(prev => ({ ...prev, category_id: data[0].id }));
-        }
       } catch (err) {
         alert(err.message);
       }
     };
     fetchCategories();
   }, [token]);
+
+  // Fetch product details
+  useEffect(() => {
+    const fetchProduct = async () => {
+      setFetching(true);
+      try {
+        const res = await fetch(
+          `http://192.168.99.100:8082/api/admin/products/${id}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!res.ok) throw new Error("Failed to fetch product");
+        const data = await res.json();
+        setForm({
+          name: data.name,
+          price: data.price,
+          category_id: data.category.id,
+          description: data.description,
+          image: null,
+        });
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        setFetching(false);
+      }
+    };
+    fetchProduct();
+  }, [id, token]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -63,17 +90,21 @@ function AdminProductForm() {
       formData.append("description", form.description);
       formData.append("category_id", form.category_id);
       if (form.image) formData.append("image", form.image);
+      formData.append("_method", "PUT");
 
-      const res = await fetch("http://192.168.99.100:8082/api/admin/products", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
+      const res = await fetch(
+        `http://192.168.99.100:8082/api/admin/products/${id}`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        }
+      );
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to add product");
+      if (!res.ok) throw new Error(data.message || "Failed to update product");
 
-      alert("✅ Product added successfully!");
+      alert("✅ Product updated successfully!");
       navigate("/admin/products");
     } catch (err) {
       alert("❌ " + err.message);
@@ -82,9 +113,12 @@ function AdminProductForm() {
     }
   };
 
+  if (fetching)
+    return <p className="text-center mt-4">Loading product details...</p>;
+
   return (
     <div className="container mt-4">
-      <h3>Add Product</h3>
+      <h3>Edit Product</h3>
       <form onSubmit={handleSubmit} className="mb-4">
         <input
           type="text"
@@ -111,8 +145,10 @@ function AdminProductForm() {
           className="form-control mb-2"
           required
         >
-          {categories.map(c => (
-            <option key={c.id} value={c.id}>{c.name}</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
           ))}
         </select>
         <textarea
@@ -130,11 +166,11 @@ function AdminProductForm() {
           accept="image/*"
         />
         <button className="btn btn-success" disabled={loading}>
-          {loading ? "Adding..." : "Add"}
+          {loading ? "Updating..." : "Update"}
         </button>
       </form>
     </div>
   );
 }
 
-export default AdminProductForm;
+export default AdminProductEdit;

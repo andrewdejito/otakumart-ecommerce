@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -28,13 +29,24 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string',
+            'name'        => 'required|string',
             'description' => 'nullable|string',
-            'price' => 'required|numeric',
+            'price'       => 'required|numeric',
             'category_id' => 'required|exists:categories,id',
+            'image'       => 'nullable|image|max:2048',
         ]);
 
-        $product = Product::create($request->all());
+        $data = $request->only(['name', 'description', 'price', 'category_id']);
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $filename = time() . '_' . Str::slug($request->name) . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('images'), $filename); // store in public/images
+            $data['image'] = '/images/' . $filename;
+        }
+
+        $product = Product::create($data);
 
         return response()->json([
             'message' => 'Product created successfully',
@@ -51,13 +63,29 @@ class ProductController extends Controller
         }
 
         $request->validate([
-            'name' => 'sometimes|required|string',
+            'name'        => 'sometimes|required|string',
             'description' => 'nullable|string',
-            'price' => 'sometimes|required|numeric',
+            'price'       => 'sometimes|required|numeric',
             'category_id' => 'sometimes|required|exists:categories,id',
+            'image'       => 'nullable|image|max:2048',
         ]);
 
-        $product->update($request->all());
+        $data = $request->only(['name', 'description', 'price', 'category_id']);
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($product->image && file_exists(public_path($product->image))) {
+                unlink(public_path($product->image));
+            }
+
+            $image = $request->file('image');
+            $filename = time() . '_' . Str::slug($request->name ?? $product->name) . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('images'), $filename);
+            $data['image'] = '/images/' . $filename;
+        }
+
+        $product->update($data);
 
         return response()->json([
             'message' => 'Product updated successfully',
@@ -71,6 +99,10 @@ class ProductController extends Controller
         $product = Product::find($id);
         if (!$product) {
             return response()->json(['message' => 'Product not found'], 404);
+        }
+
+        if ($product->image && file_exists(public_path($product->image))) {
+            unlink(public_path($product->image));
         }
 
         $product->delete();

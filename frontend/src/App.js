@@ -1,4 +1,3 @@
-// src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
@@ -11,10 +10,19 @@ import Checkout from './components/Checkout';
 import Footer from './components/Footer';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
+
+// USER ORDER PAGES
+import UserOrderList from './components/Orders/UserOrderList';
+import UserOrderDetails from './components/Orders/UserOrderDetails';
+
+// ADMIN PAGES
 import AdminLogin from './components/Admin/AdminLogin';
 import AdminProductForm from "./components/Admin/AdminProductForm";
-import OrderList from './components/Orders/OrderList';
-import OrderDetails from './components/Orders/OrderDetails';
+import AdminProductEdit from "./components/Admin/AdminProductEdit";
+import AdminProductList from "./components/Admin/AdminProductList";
+import AdminOrderList from './components/Orders/AdminOrderList';
+import AdminOrderDetails from './components/Orders/AdminOrderDetails';
+
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from "./context/AuthContext";
 
@@ -38,11 +46,18 @@ function App() {
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/login" element={<Login />} />
+
+              {/* User Orders */}
+              <Route path="/orders" element={<UserOrderList />} />
+              <Route path="/orders/:id" element={<UserOrderDetails />} />
+
               {/* Admin Pages */}
               <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/admin/products" element={<AdminProductForm />} />
-              <Route path="/admin/orders" element={<OrderList />} />
-              <Route path="/admin/orders/:id" element={<OrderDetails />} />
+              <Route path="/admin/productForm" element={<AdminProductForm />} /> {/* Add */}
+              <Route path="/admin/products/edit/:id" element={<AdminProductEdit />} /> {/* Edit */}
+              <Route path="/admin/products" element={<AdminProductList />} />
+              <Route path="/admin/orders" element={<AdminOrderList />} />
+              <Route path="/admin/orders/:id" element={<AdminOrderDetails />} />
             </Routes>
           </div>
 

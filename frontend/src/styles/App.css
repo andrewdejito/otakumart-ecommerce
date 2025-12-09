@@ -122,14 +122,19 @@ body {
 }
 
 .navbar-otakumart .form-control {
-  background: #fff;
+  background: #733e7e;
   color: #000;
+}
+
+.navbar-otakumart .form-control::placeholder {
+  color: #666; /* gray placeholder */
+  opacity: 1;
 }
 
 /* Black Search Button */
 .navbar-otakumart .btn-search {
   background-color: #000 !important;
-  border-color: #000 !important;
+  border: none;
   color: #fff !important;
 }
 

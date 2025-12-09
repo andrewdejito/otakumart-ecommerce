@@ -12,8 +12,9 @@ function ProductDetails() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
+  const [adding, setAdding] = useState(false); // loading state
 
-  if (loading) return <Spinner animation="border" />;
+  if (loading) return <Spinner animation="border" className="d-block mx-auto mt-4" />;
   if (error) return <Alert variant="danger">Error: {error.message}</Alert>;
 
   const product = products.find((p) => p.id === Number(id));
@@ -24,23 +25,39 @@ function ProductDetails() {
       </Container>
     );
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!user) {
       alert("Please login first!");
       navigate("/login");
       return;
     }
-    addToCart(product, quantity);
+
+    setAdding(true);
+    try {
+      await addToCart(product, quantity);
+    } catch (err) {
+      alert("Failed to add to cart: " + err.message);
+    } finally {
+      setAdding(false);
+    }
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (!user) {
       alert("Please login first!");
       navigate("/login");
       return;
     }
-    addToCart(product, quantity);
-    navigate("/checkout");
+
+    setAdding(true);
+    try {
+      await addToCart(product, quantity);
+      navigate("/checkout");
+    } catch (err) {
+      alert("Failed to add to cart: " + err.message);
+    } finally {
+      setAdding(false);
+    }
   };
 
   return (
@@ -73,15 +90,25 @@ function ProductDetails() {
                 onChange={(e) => setQuantity(Number(e.target.value))}
                 className="form-control"
                 style={{ width: 100 }}
+                disabled={adding}
               />
             </div>
 
             <div>
-              <Button variant="primary" className="me-2" onClick={handleAdd}>
-                Add to Cart
+              <Button
+                variant="primary"
+                className="me-2"
+                onClick={handleAdd}
+                disabled={adding}
+              >
+                {adding ? "Adding..." : "Add to Cart"}
               </Button>
-              <Button variant="success" onClick={handleBuyNow}>
-                Buy Now
+              <Button
+                variant="success"
+                onClick={handleBuyNow}
+                disabled={adding}
+              >
+                {adding ? "Adding..." : "Buy Now"}
               </Button>
             </div>
           </Col>

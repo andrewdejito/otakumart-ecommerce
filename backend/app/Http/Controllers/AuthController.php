@@ -34,27 +34,34 @@ class AuthController extends Controller
     }
 
     // LOGIN
-    public function login(Request $request)
-    {
-        $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required'
-        ]);
+public function login(Request $request)
+{
+    $request->validate([
+        'email'    => 'required|email',
+        'password' => 'required',
+        'role'     => 'nullable|in:user,admin', // optional role check
+    ]);
 
-        $user = User::where('email', $request->email)->first();
+    $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
-        }
-
-        $token = $user->createToken('authToken')->plainTextToken;
-
-        return response()->json([
-            'message' => 'Login successful',
-            'user'    => $user,
-            'token'   => $token
-        ]);
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return response()->json(['message' => 'Invalid credentials'], 401);
     }
+
+    // Check role if provided
+    if ($request->role && $user->role !== $request->role) {
+        return response()->json(['message' => 'Access denied: wrong role'], 403);
+    }
+
+    $token = $user->createToken('authToken')->plainTextToken;
+
+    return response()->json([
+        'message' => 'Login successful',
+        'user'    => $user,
+        'token'   => $token
+    ]);
+}
+
 
     // LOGOUT
     public function logout(Request $request)
