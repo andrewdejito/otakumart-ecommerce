@@ -8,19 +8,20 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('orders', function (Blueprint $table) {
+        Schema::create('cart_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->decimal('total', 10, 2);
-            $table->enum('status', ['pending', 'processing', 'completed', 'cancelled'])->default('pending');
-            $table->string('shipping_address');
-            $table->string('payment_method');
+            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->integer('quantity')->default(1);
             $table->timestamps();
+            
+            // Prevent duplicate entries for same user+product
+            $table->unique(['user_id', 'product_id']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('orders');
+        Schema::dropIfExists('cart_items');
     }
 };

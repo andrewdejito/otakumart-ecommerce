@@ -1,42 +1,46 @@
 import React, { useState } from "react";
-import { Form, Button, Container } from "react-bootstrap";
+import { Form, Button, Container, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 
 function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); // login loading state
-  const { login } = useAuth();
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e, admin = false) => {
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true); // start loading
+    setLoading(true);
 
     try {
-      const res = await fetch("http://192.168.99.100:8082/api/login", {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+      const response = await fetch(`${apiUrl}/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ 
-          email, 
-          password, 
-          role: admin ? "admin" : "user"
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Login failed");
+      const data = await response.json();
 
-      login(data.user, data.token);
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
 
-      navigate(admin ? "/admin/products" : "/");
+      // Save token and user
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      
+      alert("Login successful!");
+      navigate("/");
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false); // stop loading
+      setLoading(false);
     }
   };
 
@@ -44,49 +48,30 @@ function Login() {
     <main className="auth-page">
       <Container className="d-flex justify-content-center align-items-center flex-column">
         <h2 className="fw-bold mb-4">Login</h2>
-        {error && <p className="text-danger">{error}</p>}
-        <Form
-          onSubmit={(e) => handleSubmit(e, false)}
-          className="auth-form p-4 rounded-3 shadow-sm bg-white"
-        >
+        {error && <Alert variant="danger">{error}</Alert>}
+        <Form className="auth-form p-4 rounded-3 shadow-sm bg-white" onSubmit={handleSubmit}>
           <Form.Group className="mb-3">
             <Form.Control
               type="email"
+              name="email"
               placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={form.email}
+              onChange={handleChange}
               required
-              disabled={loading}
             />
           </Form.Group>
           <Form.Group className="mb-4">
             <Form.Control
               type="password"
+              name="password"
               placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={form.password}
+              onChange={handleChange}
               required
-              disabled={loading}
             />
           </Form.Group>
-
-          <Button
-            variant="primary"
-            type="submit"
-            className="w-100 mb-2"
-            disabled={loading}
-          >
+          <Button variant="primary" type="submit" className="w-100 btn-signup" disabled={loading}>
             {loading ? "Logging in..." : "Login"}
-          </Button>
-
-          <Button
-            variant="secondary"
-            type="button"
-            className="w-100"
-            onClick={(e) => handleSubmit(e, true)}
-            disabled={loading}
-          >
-            {loading ? "Logging in..." : "Login as Admin"}
           </Button>
         </Form>
       </Container>

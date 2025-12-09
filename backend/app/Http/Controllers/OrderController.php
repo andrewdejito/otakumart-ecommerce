@@ -21,70 +21,6 @@ class OrderController extends Controller
 
         return response()->json($orders);
     }
-    public function adminIndex()
-{
-    $orders = Order::with(['user', 'orderItems.product'])->get(); // include user and products
-
-    // Map to include item count and total price
-    $ordersData = $orders->map(function ($order) {
-        return [
-            'id' => $order->id,
-            'user' => $order->user,
-            'status' => $order->status,
-            'created_at' => $order->created_at->format('Y-m-d H:i'),
-            'total' => $order->orderItems->sum(fn($item) => $item->quantity * $item->price),
-            'items_count' => $order->orderItems->sum('quantity'),
-        ];
-    });
-
-    return response()->json(['orders' => $ordersData]);
-}
-
-public function adminShow($id)
-{
-    $order = Order::with(['user', 'orderItems.product'])->find($id);
-
-    if (!$order) {
-        return response()->json(['message' => 'Order not found'], 404);
-    }
-
-    // Map order items
-    $orderData = [
-        'id' => $order->id,
-        'user' => $order->user,
-        'status' => $order->status,
-        'total' => $order->orderItems->sum(fn($item) => $item->quantity * $item->price),
-        'items' => $order->orderItems->map(function($item) {
-            return [
-                'id' => $item->id,
-                'quantity' => $item->quantity,
-                'product' => $item->product,
-            ];
-        }),
-        'created_at' => $order->created_at,
-    ];
-
-    return response()->json(['order' => $orderData]);
-}
-
-public function updateStatus(Request $request, $id)
-{
-    $request->validate([
-        'status' => 'required|in:pending,paid,shipped,delivered,cancelled'
-    ]);
-
-    $order = Order::find($id);
-    if (!$order) {
-        return response()->json(['message' => 'Order not found'], 404);
-    }
-
-    $order->status = $request->status;
-    $order->save();
-
-    return response()->json(['message' => 'Order status updated', 'order' => $order]);
-}
-
-
 
     // Get single order
     public function show($id)
@@ -95,6 +31,9 @@ public function updateStatus(Request $request, $id)
 
         return response()->json($order);
     }
+    public function adminIndex()
+{
+    $orders = Order::with(['user', 'orderItems.product'])->get(); // include user and products
 
     // Create order from cart
     public function store(Request $request)
@@ -154,4 +93,20 @@ public function updateStatus(Request $request, $id)
         }
     }
 
+    // Update order status (admin only)
+    public function update(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
+
+        $request->validate([
+            'status' => 'required|in:pending,processing,completed,cancelled'
+        ]);
+
+        $order->update(['status' => $request->status]);
+
+        return response()->json([
+            'message' => 'Order updated successfully',
+            'order' => $order
+        ]);
+    }
 }

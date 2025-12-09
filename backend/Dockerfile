@@ -1,5 +1,4 @@
-# PHP 8.3 + Apache
-FROM php:7.4-apache
+FROM php:8.4-apache
 
 # Set working directory
 WORKDIR /var/www/html
@@ -16,39 +15,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zip \
     unzip \
     libzip-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    default-mysql-client \
-    nodejs \
-    npm \
- && docker-php-ext-configure gd --with-freetype --with-jpeg \
- && docker-php-ext-install pdo_mysql mysqli mbstring exif pcntl bcmath gd zip \
- && a2enmod rewrite \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
+    && docker-php-ext-install pdo_mysql zip
 
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Enable Apache mod_rewrite
+RUN a2enmod rewrite
 
-# Verify Composer installation
-RUN /usr/local/bin/composer --version
+# Copy Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Configure Apache for Laravel
-RUN echo '<VirtualHost *:80>' > /etc/apache2/sites-available/000-default.conf \
- && echo '    DocumentRoot /var/www/html/public' >> /etc/apache2/sites-available/000-default.conf \
- && echo '    <Directory /var/www/html/public>' >> /etc/apache2/sites-available/000-default.conf \
- && echo '        AllowOverride All' >> /etc/apache2/sites-available/000-default.conf \
- && echo '        Require all granted' >> /etc/apache2/sites-available/000-default.conf \
- && echo '    </Directory>' >> /etc/apache2/sites-available/000-default.conf \
- && echo '    ErrorLog ${APACHE_LOG_DIR}/error.log' >> /etc/apache2/sites-available/000-default.conf \
- && echo '    CustomLog ${APACHE_LOG_DIR}/access.log combined' >> /etc/apache2/sites-available/000-default.conf \
- && echo '</VirtualHost>' >> /etc/apache2/sites-available/000-default.conf
+# Set working directory
+WORKDIR /var/www/html
 
-# Permissions for Apache
-RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
+# Copy application
+COPY . .
 
-# Expose Apache port
+# Install dependencies
+RUN composer install --no-dev --optimize-autoloader
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Apache will listen on port 80
 EXPOSE 80
-
-# Start Apache
-CMD ["apache2-foreground"]

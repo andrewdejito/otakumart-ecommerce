@@ -1,47 +1,50 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { Alert } from "react-bootstrap";
 
 function AdminProductForm() {
-  const { token, user } = useAuth();
-  const navigate = useNavigate();
-  const [form, setForm] = useState({
-    name: "",
-    price: "",
-    category_id: "",
-    description: "",
-    image: null,
-  });
+  const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [form, setForm] = useState({ 
+    id: null, 
+    name: "", 
+    description: "",
+    price: 0,
+    category_id: "",
+    image: "",
+    stock: 0
+  });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+  const token = localStorage.getItem('token');
 
   // Redirect non-admin users
   useEffect(() => {
-    if (!user || user.role !== "admin") {
-      navigate("/");
-    }
-  }, [user, navigate]);
-
-  // Fetch categories
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch("http://192.168.99.100:8082/api/admin/categories", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error("Failed to fetch categories");
-        const data = await res.json();
-        setCategories(data);
-
-        if (data.length) {
-          setForm(prev => ({ ...prev, category_id: data[0].id }));
-        }
-      } catch (err) {
-        alert(err.message);
-      }
-    };
+    fetchProducts();
     fetchCategories();
-  }, [token]);
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch(`${API_URL}/products`);
+      const data = await response.json();
+      setProducts(data);
+    } catch (err) {
+      setError("Failed to load products");
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(`${API_URL}/categories`);
+      const data = await response.json();
+      setCategories(data);
+    } catch (err) {
+      setError("Failed to load categories");
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -54,37 +57,72 @@ function AdminProductForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
     setLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append("name", form.name);
-      formData.append("price", form.price);
-      formData.append("description", form.description);
-      formData.append("category_id", form.category_id);
-      if (form.image) formData.append("image", form.image);
+      const url = form.id 
+        ? `${API_URL}/admin/products/${form.id}` 
+        : `${API_URL}/admin/products`;
+      
+      const method = form.id ? 'PUT' : 'POST';
 
-      const res = await fetch("http://192.168.99.100:8082/api/admin/products", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(form)
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to add product");
+      const data = await response.json();
 
-      alert("✅ Product added successfully!");
-      navigate("/admin/products");
+      if (!response.ok) {
+        throw new Error(data.message || 'Operation failed');
+      }
+
+      setSuccess(form.id ? 'Product updated!' : 'Product added!');
+      setForm({ id: null, name: "", description: "", price: 0, category_id: "", image: "", stock: 0 });
+      fetchProducts();
     } catch (err) {
-      alert("❌ " + err.message);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to add product");
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this product?")) return;
+
+    try {
+      const response = await fetch(`${API_URL}/admin/products/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Delete failed');
+
+      setSuccess("Product deleted!");
+      fetchProducts();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   return (
     <div className="container mt-4">
-      <h3>Add Product</h3>
+      <h3>{form.id ? "Edit Product" : "Add Product"}</h3>
+      
+      {error && <Alert variant="danger" dismissible onClose={() => setError("")}>{error}</Alert>}
+      {success && <Alert variant="success" dismissible onClose={() => setSuccess("")}>{success}</Alert>}
+      
       <form onSubmit={handleSubmit} className="mb-4">
         <input
           type="text"
@@ -94,6 +132,13 @@ function AdminProductForm() {
           className="form-control mb-2"
           onChange={handleChange}
           required
+        />
+        <textarea
+          name="description"
+          value={form.description}
+          placeholder="Description"
+          className="form-control mb-2"
+          onChange={handleChange}
         />
         <input
           type="number"
@@ -107,12 +152,72 @@ function AdminProductForm() {
         <select
           name="category_id"
           value={form.category_id}
-          onChange={handleChange}
           className="form-control mb-2"
+          onChange={handleChange}
           required
         >
-          {categories.map(c => (
-            <option key={c.id} value={c.id}>{c.name}</option>
+          <option value="">Select Category</option>
+          {categories.map(cat => (
+            <option key={cat.id} value={cat.id}>{cat.name}</option>
+          ))}
+        </select>
+        <input
+          type="text"
+          name="image"
+          value={form.image}
+          placeholder="Image URL"
+          className="form-control mb-2"
+          onChange={handleChange}
+        />
+        <input
+          type="number"
+          name="stock"
+          value={form.stock}
+          placeholder="Stock"
+          className="form-control mb-2"
+          onChange={handleChange}
+        />
+        <button className="btn btn-success" disabled={loading}>
+          {loading ? "Saving..." : (form.id ? "Update" : "Add")}
+        </button>
+        {form.id && (
+          <button 
+            type="button" 
+            className="btn btn-secondary ms-2" 
+            onClick={() => setForm({ id: null, name: "", description: "", price: 0, category_id: "", image: "", stock: 0 })}
+          >
+            Cancel
+          </button>
+        )}
+      </form>
+
+      <h4>Products List</h4>
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Price (₱)</th>
+            <th>Category</th>
+            <th>Stock</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.map((p) => (
+            <tr key={p.id}>
+              <td>{p.name}</td>
+              <td>{p.price}</td>
+              <td>{p.category?.name}</td>
+              <td>{p.stock || 0}</td>
+              <td>
+                <button className="btn btn-primary btn-sm me-2" onClick={() => handleEdit(p)}>
+                  Edit
+                </button>
+                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p.id)}>
+                  Delete
+                </button>
+              </td>
+            </tr>
           ))}
         </select>
         <textarea
